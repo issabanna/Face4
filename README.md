@@ -7,7 +7,7 @@ An interactive, responsive concept built from Issa's brief. Open `dist/index.htm
 - Local JPEG/PNG/WebP portrait preview, file-size and format checks, and removal.
 - User-selected style mood and color palette with clearly labeled curated suggestions.
 - Personalized card, PNG export, native file sharing when supported, and a Facebook website invitation for hosted versions.
-- Hair, frames, colors, and portrait styling ideas.
+- Free initial assessment including first-impression presentation tips, plus hair, frames, colors, and portrait styling ideas. First-impression tips follow the selected style mood; they are not photo analysis or personality judgments.
 - Responsive layout, keyboard focus states, consent checkbox, reduced-motion support, accessible modal, and payment/analysis disclosures.
 
 Photos stay in browser memory. There is no image upload, database, tracking script, or payment collection. Native sharing lets the visitor intentionally send a generated card to their chosen destination.
