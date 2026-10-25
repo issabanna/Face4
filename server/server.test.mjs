@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createServer} from './server.mjs';
+const origin='https://issabanna.github.io';
+const photo='data:image/jpeg;base64,/9j/2Q==';
+const input={name:'Maya',email:'maya@example.com',photo};
+const good={usable:true,reason:'',firstImpression:'Even lighting keeps attention on the face.',palette:['#394f44','#bd765b','#e7c788','#eee3d0'].map((hex,i)=>({hex,name:'Color '+i})),tips:['Try daylight.','Compare two frames.','Keep the backdrop simple.']};
+async function withServer(options,run){const server=createServer(options);await new Promise(r=>server.listen(0,'127.0.0.1',r));try{await run('http://127.0.0.1:'+server.address().port+'/api/analyze');}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}}
+const request=(url,body=input,from=origin)=>fetch(url,{method:'POST',headers:{Origin:from,'Content-Type':'application/json'},body:JSON.stringify(body)});
+test('disconnected service returns a clear 503',()=>withServer({env:{}},async url=>{assert.equal((await request(url)).status,503);}));
+test('rejects an unapproved origin without calling provider',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:()=>{throw Error('must not call');}},async url=>{assert.equal((await request(url,input,'https://other.example')).status,403);}));
+test('validates name, email, and image before provider call',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:()=>{throw Error('must not call');}},async url=>{for(const change of [{email:'invalid'},{name:''},{photo:'data:image/jpeg;base64,YWJjZA=='}])assert.equal((await request(url,{...input,...change})).status,400);}));
+test('real provider format returns assessment, without forwarding name or email',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:async(url,options)=>{assert.equal(url,'https://api.openai.com/v1/responses');const body=JSON.parse(options.body);assert.equal(body.store,false);assert(!options.body.includes(input.name));assert(!options.body.includes(input.email));assert.equal(body.input[0].content[1].image_url,photo);return Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(good)}]}]});}},async url=>{const response=await request(url);assert.equal(response.status,200);const data=await response.json();assert.equal(data.firstImpression,good.firstImpression);assert.equal(data.tips.length,3);}));
+test('no face produces actionable error instead of a fake result',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({...good,usable:false,reason:'Use one clearly visible face.'})}]}]})},async url=>{assert.equal((await request(url)).status,422);}));
+test('invalid provider colors are rejected',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({...good,palette:[{name:'bad',hex:'url(x)'}]})}]}]})},async url=>{assert.equal((await request(url)).status,502);}));
+test('daily cap prevents additional paid provider calls',()=>withServer({env:{OPENAI_API_KEY:'test',DAILY_LIMIT:'1'},fetchImpl:async()=>Response.json({error:'down'},{status:500})},async url=>{assert.equal((await request(url)).status,502);assert.equal((await request(url)).status,429);}));

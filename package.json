@@ -1,0 +1,1 @@
+{"name":"face4","version":"0.2.0","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"node server/server.mjs","test":"node --test server/server.test.mjs"}}
