@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createServer} from './server.mjs';
+import http from 'node:http';
+import {createServer,createHandler} from './server.mjs';
 const origin='https://issabanna.github.io';
 const photo='data:image/jpeg;base64,/9j/2Q==';
 const input={name:'Maya',email:'maya@example.com',photo};
@@ -14,3 +15,11 @@ test('real provider format returns assessment, without forwarding name or email'
 test('no face produces actionable error instead of a fake result',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({...good,usable:false,reason:'Use one clearly visible face.'})}]}]})},async url=>{assert.equal((await request(url)).status,422);}));
 test('invalid provider colors are rejected',()=>withServer({env:{OPENAI_API_KEY:'test'},fetchImpl:async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify({...good,palette:[{name:'bad',hex:'url(x)'}]})}]}]})},async url=>{assert.equal((await request(url)).status,502);}));
 test('daily cap prevents additional paid provider calls',()=>withServer({env:{OPENAI_API_KEY:'test',DAILY_LIMIT:'1'},fetchImpl:async()=>Response.json({error:'down'},{status:500})},async url=>{assert.equal((await request(url)).status,502);assert.equal((await request(url)).status,429);}));
+
+test('readiness works without an Origin and exposes only availability',()=>withServer({env:{OPENAI_API_KEY:'not-exposed'}},async url=>{const r=await fetch(url);assert.equal(r.status,200);assert.deepEqual(await r.json(),{available:true});}));
+test('Vercel parsed body and same-origin request use shared handler',async()=>{
+ const handler=createHandler({env:{OPENAI_API_KEY:'test'},fetchImpl:async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(good)}]}]})});
+ const server=http.createServer(async(req,res)=>{let text='';for await(const chunk of req)text+=chunk;req.body=JSON.parse(text);handler(req,res);});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const host='127.0.0.1:'+server.address().port;
+ try{const r=await request('http://'+host+'/api/analyze',input,'https://'+host);assert.equal(r.status,200);assert.equal((await r.json()).tips.length,3);}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

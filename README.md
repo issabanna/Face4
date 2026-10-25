@@ -9,7 +9,13 @@ Website: https://issabanna.github.io/Face4/
 
 The sample card is explicitly labeled as illustrative. A personal card is shown only after the analysis API returns a valid result. While `dist/config.js` has an empty endpoint, submitting explains that analysis is not connected and sends no personal data. Photos preview locally, then are resized to a maximum 1280-pixel edge before submission. The form is for adults using their own photo.
 
-## OpenAI server — prepared, not hosted
+## Vercel deployment
+
+Import this repository’s `main` branch. Keep Root Directory at the repository root (do not set it to `dist`). The tracked `vercel.json` serves `dist` and deploys `api/analyze.js` as a serverless function using the shared handler. Add `OPENAI_API_KEY` as a Production environment variable, then redeploy. The Vercel website automatically calls `/api/analyze`; GitHub Pages stays a frontend-only preview. Optional `ALLOWED_ORIGIN` lets a separate frontend call the API; same-origin Vercel requests work without it.
+
+Production rate limits in the shared handler remain per-instance and reset on cold starts. Set Vercel Firewall rate limits and an OpenAI project budget before opening this endpoint broadly.
+
+## Standalone OpenAI server
 
 Requires Node 22+ and an OpenAI API account with model access and billing.
 
