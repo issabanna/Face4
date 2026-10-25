@@ -43,6 +43,6 @@ References:
 - https://developers.openai.com/api/docs/guides/your-data
 - https://developer.paypal.com/platforms/seller-onboarding
 
-## Annotated photo cards
+## Playful character cards
 
-The primary result and PNG download use the same canvas: the source portrait, six feature callouts anchored to normalized image coordinates, an overall visible-expression circle, and the requested “Get yours and more · face3.org” footer. The sample is an illustrative generated mockup. Full assessment text is available in an expandable section. Feature locations come from the vision model and are approximate; they are not a biometric landmark measurement. Unclear or multiple faces trigger a request for a clearer photo. The website retains Face4 branding; face3.org appears on the card as explicitly requested by the owner.
+The bright pastel site and shareable PNG now use four concise AI-generated sections: a fictional nickname, photo vibe, one standout visible feature, and a punchline. No shirt-color recommendations, arrows, feature coordinates, or scores. Photo vibes concern visible expression and styling, not actual personality. The sample is illustrative. Unclear or multiple faces still require a clearer upload. The download uses the same colorful canvas as the result.
