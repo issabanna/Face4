@@ -42,3 +42,7 @@ References:
 - https://developers.openai.com/api/reference/resources/responses/methods/create
 - https://developers.openai.com/api/docs/guides/your-data
 - https://developer.paypal.com/platforms/seller-onboarding
+
+## Annotated photo cards
+
+The primary result and PNG download use the same canvas: the source portrait, six feature callouts anchored to normalized image coordinates, an overall visible-expression circle, and the requested “Get yours and more · face3.org” footer. The sample is an illustrative generated mockup. Full assessment text is available in an expandable section. Feature locations come from the vision model and are approximate; they are not a biometric landmark measurement. Unclear or multiple faces trigger a request for a clearer photo. The website retains Face4 branding; face3.org appears on the card as explicitly requested by the owner.
